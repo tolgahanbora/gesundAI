@@ -1,23 +1,26 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import TreeView from './components/TreeView';
+import { addTree } from './store/treeSlice';
 
 function App() {
+  const trees = useSelector(state => state.tree.trees);
+  const dispatch = useDispatch();
+
+  const handleAddTree = () => {
+    const treeName = prompt('Enter tree name:');
+    if (treeName) {
+      dispatch(addTree({ name: treeName }));
+    }
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Tree Management Application</h1>
+      <button onClick={handleAddTree}>Add New Tree</button>
+      {trees.map(tree => (
+        <TreeView key={tree.id} tree={tree} />
+      ))}
     </div>
   );
 }
