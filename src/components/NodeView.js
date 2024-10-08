@@ -36,11 +36,7 @@ function NodeView({ node, treeId }) {
     const amount = Number(prompt('Enter amount to request:'));
     const toTreeId = Number(prompt('Enter tree ID to request from:'));
     
-    if (toTreeId === treeId) {
-      alert('Cannot request points from the same tree.');
-      return;
-    }
-  
+
     const toNodeId = Number(prompt('Enter node ID to request from:'));
     
     const targetTree = trees.find(t => t.id === toTreeId);
