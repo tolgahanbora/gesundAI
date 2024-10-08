@@ -1,13 +1,37 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { loadState } from '../utils/localStorage';
 
-let nextTreeId = 1;
-let nextNodeId = 1;
-let nextRequestId = 1;
+const persistedState = loadState();
 
-const initialState = {
+let nextGlobalId = 1;
+
+// Function to find the highest ID in the entire state
+const findHighestId = (state) => {
+  let highestId = 0;
+  
+  const traverse = (node) => {
+    if (node.id > highestId) highestId = node.id;
+    if (node.children) {
+      node.children.forEach(traverse);
+    }
+  };
+
+  state.trees.forEach(traverse);
+  state.requests.forEach(request => {
+    if (request.id > highestId) highestId = request.id;
+  });
+
+  return highestId;
+};
+
+// Initialize the state
+const initialState = persistedState?.tree || {
   trees: [],
   requests: [],
 };
+
+// Set the nextGlobalId based on the highest existing ID
+nextGlobalId = findHighestId(initialState) + 1;
 
 const findNode = (tree, nodeId) => {
   if (!tree || !nodeId) return null;
@@ -37,8 +61,8 @@ export const treeSlice = createSlice({
     addTree: (state, action) => {
       const newTree = {
         ...action.payload,
-        id: nextTreeId++,
-        self: 100, // Starting with 100 points
+        id: nextGlobalId++,
+        self: 100,
         total: 100,
         children: [],
       };
@@ -64,7 +88,7 @@ export const treeSlice = createSlice({
           if (!parent.children) parent.children = [];
           const childNode = {
             ...newNode,
-            id: nextNodeId++,
+            id: nextGlobalId++,
             self: 0,
             total: 0,
             children: [],
@@ -91,6 +115,14 @@ export const treeSlice = createSlice({
         recalculateTotal(tree);
       }
     },
+    deleteTree: (state, action) => {
+      const { treeId } = action.payload;
+      state.trees = state.trees.filter(tree => tree.id !== treeId);
+      // Also delete all requests associated with this tree
+      state.requests = state.requests.filter(request => 
+        request.fromTreeId !== treeId && request.toTreeId !== treeId
+      );
+    },
     requestPoints: (state, action) => {
       const { fromTreeId, fromNodeId, toTreeId, toNodeId, amount } = action.payload;
       
@@ -116,7 +148,7 @@ export const treeSlice = createSlice({
       }
     
       const request = {
-        id: nextRequestId++,
+        id: nextGlobalId++,
         fromTreeId,
         fromNodeId,
         toTreeId,
@@ -159,6 +191,6 @@ export const treeSlice = createSlice({
   },
 });
 
-export const { addTree, updateNode, addChild, deleteNode, requestPoints, respondToRequest } = treeSlice.actions;
+export const { addTree, updateNode, addChild, deleteNode, deleteTree, requestPoints, respondToRequest } = treeSlice.actions;
 
 export default treeSlice.reducer;

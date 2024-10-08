@@ -35,6 +35,12 @@ function NodeView({ node, treeId }) {
   const handleRequestPoints = () => {
     const amount = Number(prompt('Enter amount to request:'));
     const toTreeId = Number(prompt('Enter tree ID to request from:'));
+    
+    if (toTreeId === treeId) {
+      alert('Cannot request points from the same tree.');
+      return;
+    }
+  
     const toNodeId = Number(prompt('Enter node ID to request from:'));
     
     const targetTree = trees.find(t => t.id === toTreeId);
@@ -42,7 +48,7 @@ function NodeView({ node, treeId }) {
       alert('Target tree not found.');
       return;
     }
-
+  
     const findNode = (tree, nodeId) => {
       if (tree.id === nodeId) return tree;
       if (tree.children) {
@@ -53,19 +59,14 @@ function NodeView({ node, treeId }) {
       }
       return null;
     };
-
+  
     const targetNode = findNode(targetTree, toNodeId);
-
+  
     if (!targetNode) {
       alert('Target node not found.');
       return;
     }
-
-    if (targetNode.self < amount) {
-      alert('Insufficient points available on the selected node.');
-      return;
-    }
-
+  
     if (amount && toTreeId && toNodeId) {
       console.log('Requesting Points:', { fromTreeId: treeId, fromNodeId: node.id, toTreeId, toNodeId, amount });
       dispatch(requestPoints({ fromTreeId: treeId, fromNodeId: node.id, toTreeId, toNodeId, amount }));
